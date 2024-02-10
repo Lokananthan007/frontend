@@ -1,8 +1,6 @@
-// src/components/FormComponent.js
 import React, { useState } from 'react';
-import { Form, Button } from 'react-bootstrap';
-import ImageUploader from 'react-image-upload';
 import axios from 'axios';
+import './App.css';
 
 const App = () => {
   const [formData, setFormData] = useState({
@@ -14,105 +12,70 @@ const App = () => {
   });
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
-  const handleImageUpload = (image) => {
-    setFormData((prevData) => ({ ...prevData, photo: image }));
+  const handleFileChange = (e) => {
+    setFormData({
+      ...formData,
+      photo: e.target.files[0],
+    });
   };
-
-  
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const formDataToSend = new FormData();
+    formDataToSend.append('name', formData.name);
+    formDataToSend.append('class', formData.class);
+    formDataToSend.append('place', formData.place);
+    formDataToSend.append('phoneNumber', formData.phoneNumber);
+    formDataToSend.append('photo', formData.photo);
+
     try {
-      const response = await axios.post('http://localhost:2233/users', formData);
-  
-      if (response.status === 201) {
-        console.log('Form data submitted successfully');
-        // Optionally, reset the form after submission
-        setFormData({
-          name: '',
-          class: '',
-          place: '',
-          phoneNumber: '',
-          photo: null,
-        });
-  
-        // Redirect or update UI after successful submission
-        // Example: Redirect to a success page or fetch updated data
-        // history.push('/success'); // Assuming you are using React Router
-      } else {
-        console.error('Error submitting form data');
-      }
+      await axios.post('http://localhost:2233/users', formDataToSend);
+      alert('Form submitted successfully'); // Show alert message
+      setFormData({  // Clear the form fields
+        name: '',
+        class: '',
+        place: '',
+        phoneNumber: '',
+        photo: null,
+      });
     } catch (error) {
-      console.error('Error submitting form data:', error);
+      console.error('Error submitting form', error);
     }
   };
-  
+
   return (
-    <Form onSubmit={handleSubmit}>
-      <Form.Group controlId="formName">
-        <Form.Label>Name</Form.Label>
-        <Form.Control
-          type="text"
-          placeholder="Enter your name"
-          name="name"
-          value={formData.name}
-          onChange={handleInputChange}
-        />
-      </Form.Group>
+    <form onSubmit={handleSubmit}>
+      <label htmlFor="name">Name:</label>
+      <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} required />
 
-      <Form.Group controlId="formClass">
-        <Form.Label>Class</Form.Label>
-        <Form.Control
-          type="text"
-          placeholder="Enter your class"
-          name="class"
-          value={formData.class}
-          onChange={handleInputChange}
-        />
-      </Form.Group>
+      <label htmlFor="class">Class:</label>
+      <input type="text" id="class" name="class" value={formData.class} onChange={handleInputChange} required />
 
-      <Form.Group controlId="formPlace">
-        <Form.Label>Place</Form.Label>
-        <Form.Control
-          type="text"
-          placeholder="Enter your place"
-          name="place"
-          value={formData.place}
-          onChange={handleInputChange}
-        />
-      </Form.Group>
+      <label htmlFor="place">Place:</label>
+      <input type="text" id="place" name="place" value={formData.place} onChange={handleInputChange} required />
 
-      <Form.Group controlId="formPhoneNumber">
-        <Form.Label>Phone Number</Form.Label>
-        <Form.Control
-          type="tel"
-          placeholder="Enter your phone number"
-          name="phoneNumber"
-          value={formData.phoneNumber}
-          onChange={handleInputChange}
-        />
-      </Form.Group>
+      <label htmlFor="phoneNumber">Phone Number:</label>
+      <input
+        type="text"
+        id="phoneNumber"
+        name="phoneNumber"
+        value={formData.phoneNumber}
+        onChange={handleInputChange}
+        required
+      />
 
-      <Form.Group controlId="formPhoto">
-        <Form.Label>Photo</Form.Label>
-        <ImageUploader
-          withIcon={true}
-          buttonText="Choose photo"
-          onChange={handleImageUpload}
-          imgExtension={['.jpg', '.gif', '.png', '.jpeg']}
-          maxFileSize={5242880}
-        />
-      </Form.Group>
+      <label htmlFor="photo">Photo:</label>
+      <input type="file" id="photo" name="photo" accept="image/*" onChange={handleFileChange} required />
 
-      <Button variant="primary" type="submit">
-        Submit
-      </Button>
-    </Form>
+      <button type="submit">Submit</button>
+    </form>
   );
 };
 
